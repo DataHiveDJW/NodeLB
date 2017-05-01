@@ -105,10 +105,10 @@ class LoadBalancer extends EventEmitter {
     const cache = this.cache;
     const routes = this.routes;
 
-    console.log(options[0].port, ' ', options[0].active);
-    console.log(options[1].port, ' ', options[1].active);
-    console.log(options[2].port, ' ', options[2].active);
-    console.log('-----');
+    // console.log(options[0].port, ' ', options[0].active);
+    // console.log(options[1].port, ' ', options[1].active);
+    // console.log(options[2].port, ' ', options[2].active);
+    // console.log('-----');
 
     if (cache[bReq.method + bReq.url]) {
       // STATS GATHERING
