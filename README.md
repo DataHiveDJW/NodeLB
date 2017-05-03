@@ -146,7 +146,9 @@ rp.clearCache();
 
 # Redis Sessions Setup
 
-A Redis server must be setup as a prerequisite to utilizing the Redis Sessions object (see instructions for setting up Redis server). The deploy method requires the Redis server address in the options argument (host/ip and port) and creates/returns the ‘rs’ (Redis sessions) object.
+A Redis server must be setup as a prerequisite to utilizing the Redis Sessions object 
+[see Redis documentation for more information on setting up your personal Redis instance](https://redis.io/documentation) 
+The deploy method requires the Redis server address in the options argument (host/ip and port) and creates/returns the ‘rs’ (Redis sessions) object.
 
 ```javascript
 const options = {
