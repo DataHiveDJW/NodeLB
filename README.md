@@ -69,6 +69,8 @@ const rp = lb.deploy(‘rp’, options);
 
 ## rp.addOptions ( options ) —
 
+**Options (array of objects)**
+
 If further target server options are added, you can use rp.addOptions to update your existing options collection. 
 This method will not overwrite your previous collection.
 
