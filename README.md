@@ -3,7 +3,7 @@
 Include our library using:
 
 ```javascript
-const lb = require(‘loadBalancer’);
+const lb = require(‘nodelb’);
 ```
 
 ## Options  —
@@ -156,7 +156,7 @@ const options = {
   port: 6379,        // —> integer port number
 };
 
-const lb = require(‘loadBalancer’);
+const lb = require(‘nodelb’);
 const rs = lb.deploy(‘redis’, options);
 ```
 
@@ -188,8 +188,11 @@ To make this more relative, say your Target Server is able to handle 100 request
 A simple set up to getting threads started
 
 ```javascript
+const lb = require('nodelb');
 const threads = lb.deploy(‘threads’);
-threads('www.example.org', 3000);
+
+const host = 'localhost';
+const port = 3000;
 threads(host, port);
 ```
 
