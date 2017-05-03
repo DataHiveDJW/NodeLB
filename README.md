@@ -63,8 +63,8 @@ lb.deploy triggers the creation of the reverse proxy object.
 lb.deploy has three specific strings that can be used in this library.
 To see the other use cases for lb.deploy in this library -- 
 
-Redis - https://github.com/DataHiveDJW/nodeLB/blob/master/README.md#redis-sessions-setup
-Clusters - 
+[Redis Deploy Section](https://github.com/DataHiveDJW/nodeLB/blob/master/README.md#redis-sessions-setup)
+[Multi-Threading Deploy Section](https://github.com/DataHiveDJW/nodeLB/blob/master/README.md#threads-setup)
 
 ### Example:
 ```javascript
@@ -232,7 +232,7 @@ To make this more relative, say your target server is able to handle 100 request
 
 The threads will balance requests from the reverse proxy server through the cluster module’s native round-robin algorithm (except on Windows).
 
-See more details at https://nodejs.org/api/cluster.html#cluster_how_it_works. 
+See more details at [Node's Cluster Module Docs](https://nodejs.org/api/cluster.html#cluster_how_it_works)
 
 A simple set up to getting threads started:
 
