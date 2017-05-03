@@ -2,7 +2,8 @@
 
 Include our library using:
 
-const lb = require(‘loadBalancer’);
+```const lb = require(‘loadBalancer’);
+```
 
 ## Options  —
 
@@ -32,7 +33,8 @@ lb.deploy has three specific strings that can be used in this library.
 To see the other use cases for lb.deploy in this library -- click here.
 
 ## Example:
-const rp = lb.deploy(‘rp’, options);
+```const rp = lb.deploy(‘rp’, options);
+```
 
 rp.addOptions ( options ) —
 
@@ -41,10 +43,11 @@ This method will not overwrite your previous collection.
 
 ## Example:
 
-const newOptions = [
+```const newOptions = [
  { hostname: '127.0.0.1', port: '3000' },
  { hostname: '127.0.65.120', port: '4000' }
 ]
+```
 
 ## rp.addOptions(newOptions);
 
