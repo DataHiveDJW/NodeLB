@@ -61,7 +61,10 @@ lb.deploy triggers the creation of the reverse proxy object.
 ‘Rp’ is the only valid string input for the first parameter to trigger your reverse proxy setup.
 
 lb.deploy has three specific strings that can be used in this library.
-To see the other use cases for lb.deploy in this library -- click here.
+To see the other use cases for lb.deploy in this library -- 
+
+Redis - https://github.com/DataHiveDJW/nodeLB/blob/master/README.md#redis-sessions-setup
+Clusters - 
 
 ### Example:
 ```javascript
