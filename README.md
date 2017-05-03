@@ -224,7 +224,7 @@ Returns true or false based on cookie validity
 
 **cookieKey (string):** name of cookie as seen in browser (targets this cookie name exclusively when validating)
 
-**Cb:** callback function with result argument true or false -- 
+**Cb (function):** callback function with result argument true or false -- 
 
 Example: `(sessionVerified) => {. . .}`
 
