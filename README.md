@@ -200,6 +200,7 @@ Sets cookie in header (DOES NOT END RESPONSE)
 **cookieKey (string):** name of cookie as seen in browser
 **uniqueId (string):** uniqueId per cookieKey (e.g. username)
 **Cb (function):** callback function executed after redis save - includes redis error and reply messages --
+
 Example: `(err, reply) => {. . .}`
 
 ## rs.verifySession(req, cookieKey, cb) // VerifySession: 
@@ -210,6 +211,7 @@ Returns true or false based on cookie validity
 **Req (object):** client request object
 **cookieKey (string):** name of cookie as seen in browser (targets this cookie name exclusively when validating)
 **Cb:** callback function with result argument true or false -- 
+
 Example: `(sessionVerified) => {. . .}`
 
 # Threads Setup
