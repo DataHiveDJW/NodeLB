@@ -53,8 +53,8 @@ for (let i = 2; i < process.argv.length; i += 2) {
 
 ## lb.deploy ( string, array( options ) — 
 
-First parameter: is a configuration argument for the reverse proxy server which in this case must be: ’rp’
-Second parameter: will be the options collection created previously created in your ‘rp.js’ file
+**First parameter (string):** is a configuration argument for the reverse proxy server which in this case must be: ’rp’
+**Second parameter (array):** will be the options collection created previously created in your ‘rp.js’ file
 
 lb.deploy triggers the creation of the reverse proxy object.
 ‘Rp’ is the only valid string input for the first parameter to trigger your reverse proxy setup.
@@ -85,7 +85,7 @@ rp.addOptions(newOptions);
 
 ## rp.setRoutes ( nestedArray ) —
 
-nestedArray is stored in the reverse proxy server as an object of what routes in your application you would like cached upon first request.
+**The nestedArray parameter:** is stored in the reverse proxy server as an object of what routes in your application you would like cached upon first request.
 
 Convention implies that you will declare this nestedArray as ‘routes’.
 Each subarray of routes takes two strings: ‘method’ & ‘url’:
@@ -94,8 +94,8 @@ Each subarray of routes takes two strings: ‘method’ & ‘url’:
 const routes = [['method', 'URL'], ['method', 'URL']];
 ```
 
-Method (string): are usual type of requests (e.g. ‘GET’, ‘POST’, ‘DELETE’, ‘PUT’);
-URL (string): will be the portion of your specific route (e.g. ‘/users’, ‘/puppies’);
+**Method (string):** are usual type of requests (e.g. ‘GET’, ‘POST’, ‘DELETE’, ‘PUT’);
+**URL (string):** will be the portion of your specific route (e.g. ‘/users’, ‘/puppies’);
 
 rp.setRoutes can be called multiple times and will concat the new routes to the routes cache
 
@@ -193,20 +193,22 @@ const rs = lb.deploy(‘redis’, options);
 Encrypts and saves session cookie in Redis
 Sets cookie in header (DOES NOT END RESPONSE)
 
-*Req (object):* client request object
-*Res (object):* client response object
-*cookieKey (string):* name of cookie as seen in browser
-*uniqueId (string):* uniqueId per cookieKey (e.g. username)
-*Cb (function):* callback function executed after redis save - includes redis error and reply messages -- example: `(err, reply) => {. . .}`
+**Req (object):** client request object
+**Res (object):** client response object
+**cookieKey (string):** name of cookie as seen in browser
+**uniqueId (string):** uniqueId per cookieKey (e.g. username)
+**Cb (function):** callback function executed after redis save - includes redis error and reply messages --
+Example: `(err, reply) => {. . .}`
 
 ## rs.verifySession(req, cookieKey, cb) // VerifySession: 
 Parses cookies in request header
 Validates session cookies against central redis store
 Returns true or false based on cookie validity
 
-*Req (object):* client request object
-*cookieKey (string):* name of cookie as seen in browser (targets this cookie name exclusively when validating)
-*Cb:* callback function with result argument true or false -- example: `(sessionVerified) => {. . .}`
+**Req (object):** client request object
+**cookieKey (string):** name of cookie as seen in browser (targets this cookie name exclusively when validating)
+**Cb:** callback function with result argument true or false -- 
+Example: `(sessionVerified) => {. . .}`
 
 # Threads Setup
 Since node is a single-threaded application natively, we provide the option to use all the threads on your target servers using the Node cluster module. Utilizing this module, the servers will be able to sustain a much higher load than when node is running single-threaded solely.
@@ -228,7 +230,7 @@ const port = 3000;
 threads(host, port);
 ```
 
-*host (string):* string containing the host url
+**host (string):** string containing the host url
 
-*port (number):* number indicating at what port will the thread respond to (e.g. localhost:3000)
+**port (number):** number indicating at what port will the thread respond to (e.g. localhost:3000)
 
