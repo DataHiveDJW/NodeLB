@@ -17,7 +17,8 @@ for (let i = 2; i < process.argv.length; i += 2) {
    hostname: process.argv[i],
    port: process.argv[i + 1],
  });
-}```
+}
+```
 
 ## lb.deploy ( string, array( options ) — 
 
