@@ -39,7 +39,7 @@ To see the other use cases for lb.deploy in this library -- click here.
 const rp = lb.deploy(‘rp’, options);
 ```
 
-rp.addOptions ( options ) —
+## rp.addOptions ( options ) —
 
 If further target server options are added, you can use rp.addOptions to update your existing options collection. 
 This method will not overwrite your previous collection.
@@ -47,7 +47,8 @@ This method will not overwrite your previous collection.
 ### Example:
 
 ```javascript
-const newOptions = [
+const newOptions = 
+[
  { hostname: '127.0.0.1', port: '3000' },
  { hostname: '127.0.65.120', port: '4000' }
 ]
