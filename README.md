@@ -6,13 +6,13 @@ $ npm install nodelb
 
 # Features
 1. Reverse-Proxy features such as :
-..*Unordered sub-list
+..*Unordered sub-list.
 -Internal caching of static files and desired route responses
 -Internal health checks
 -Cache clearing mechanisms
 
 2. Load-Balancing features such as :
-..*Unordered sub-list
+..*Unordered sub-list.
 -Round-robin load-balancing algorithm
 -DDOS Considerations
 
