@@ -2,7 +2,7 @@
 
 Include our library using:
 
-```
+```javascript
 const lb = require(‘loadBalancer’);
 ```
 
@@ -13,7 +13,8 @@ In order to create the reverse proxy object, it will need this input upon deploy
 
 ## Example:
 
-```const options = [];
+```javascript
+const options = [];
 for (let i = 2; i < process.argv.length; i += 2) {
  options.push({
    hostname: process.argv[i],
@@ -34,7 +35,8 @@ lb.deploy has three specific strings that can be used in this library.
 To see the other use cases for lb.deploy in this library -- click here.
 
 ## Example:
-```const rp = lb.deploy(‘rp’, options);
+```javascript
+const rp = lb.deploy(‘rp’, options);
 ```
 
 rp.addOptions ( options ) —
@@ -44,7 +46,8 @@ This method will not overwrite your previous collection.
 
 ## Example:
 
-```const newOptions = [
+```javascript
+const newOptions = [
  { hostname: '127.0.0.1', port: '3000' },
  { hostname: '127.0.65.120', port: '4000' }
 ]
