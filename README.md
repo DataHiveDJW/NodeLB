@@ -64,6 +64,7 @@ lb.deploy has three specific strings that can be used in this library.
 To see the other use cases for lb.deploy in this library -- 
 
 [Redis Deploy Section](https://github.com/DataHiveDJW/nodeLB/blob/master/README.md#redis-sessions-setup)
+
 [Multi-Threading Deploy Section](https://github.com/DataHiveDJW/nodeLB/blob/master/README.md#threads-setup)
 
 ### Example:
