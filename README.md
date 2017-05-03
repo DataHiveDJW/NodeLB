@@ -11,13 +11,13 @@ In order to create the reverse proxy object, it will need this input upon deploy
 
 ## Example:
 
-const options = [];
+```const options = [];
 for (let i = 2; i < process.argv.length; i += 2) {
  options.push({
    hostname: process.argv[i],
    port: process.argv[i + 1],
  });
-}
+}```
 
 ## lb.deploy ( string, array( options ) — 
 
