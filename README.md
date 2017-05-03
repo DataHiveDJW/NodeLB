@@ -2,7 +2,8 @@
 
 Include our library using:
 
-```const lb = require(‘loadBalancer’);
+```
+const lb = require(‘loadBalancer’);
 ```
 
 ## Options  —
