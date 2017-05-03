@@ -197,5 +197,6 @@ threads(host, port);
 ```
 
 host: string containing the host url
+
 port: number indicating at what port will the thread respond to (e.g. localhost:3000)
 
