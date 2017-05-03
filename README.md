@@ -219,7 +219,7 @@ To make this more relative, say your target server is able to handle 100 request
 
 The threads will balance requests from the reverse proxy server through the cluster module’s native round-robin algorithm (except on Windows).
 
-See more details at https://nodejs.org/api/cluster.html#cluster_how_it_works). 
+See more details at https://nodejs.org/api/cluster.html#cluster_how_it_works. 
 
 A simple set up to getting threads started:
 
