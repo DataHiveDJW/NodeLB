@@ -1,6 +1,6 @@
 {
   "name": "nodelb",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "node library for scaling and load balancing servers",
   "main": "nodelb.js",
   "scripts": {
