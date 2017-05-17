@@ -1,9 +1,10 @@
 const https = require('https');
 const http = require('http');
 const EventEmitter = require('events');
-const fs = require('fs');
-const errorLog = require('./errorLog');
+const el = require('./errorLog');
 const throttleIP = require('./throttleIP');
+
+const errorLog = el();
 
 class LoadBalancer extends EventEmitter {
   constructor() {

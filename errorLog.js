@@ -37,4 +37,4 @@ errorLog.write = (error) => {
   }
 }
 
-module.exports = errorLog;
+module.exports = () => errorLog;
