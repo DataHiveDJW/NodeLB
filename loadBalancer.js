@@ -1,9 +1,14 @@
+const https = require('https');
 const http = require('http');
 const EventEmitter = require('events');
+const fs = require('fs');
+const errorLog = require('./errorLog');
+const throttleIP = require('./throttleIP');
 
 class LoadBalancer extends EventEmitter {
   constructor() {
     super();
+    this.algo = 'lc';
     this.cache = {};
     this.options = [];
     this.routes = {};
@@ -18,52 +23,115 @@ class LoadBalancer extends EventEmitter {
     this.lbInit = this.lbInit.bind(this);
   };
 
+  /**
+   * Sets Load-Balancing Algorithm to Round-Robin style
+   * @public
+   */
+
+  setAlgoRR() {
+    this.algo = 'rr';
+  }
+
+  /**
+   * Sets Load-Balancing Algorithm to Least Connection style
+   * @public
+   */
+
+  setAlgoLC() {
+    this.algo = 'lc';
+  }
+
+  /**
+   * Stores desired application routes for reverse-proxy to cache responses for
+   * @param {Array} -- Nested Array of Request Type & Route
+   * @public
+   * Example: 
+   * `rp.setRoutes([['GET', '/'], ['GET', '/html']]);`
+   */
+
   setRoutes(routes) {
+    if (routes === null || routes === undefined) throw 'Set Routes received input that was either null or undefined';
+    if (!Array.isArray(routes)) throw 'Error: setRoutes expects an input of type "Array", per documentation it expects a nested Array';
+
     for (let i = 0; i < routes.length; i++) {
       let temp = routes[i][0].concat(routes[i][1]);
       this.routes[temp] = true;
     }
   };
 
+  /**
+   * Stores specific target server hostname and port information to direct requests to
+   * @param {Object} -- Options object includes specific hostname and port info. for target servers
+   * @public
+   * Example:
+   * `const options = [];
+   *   for (let i = 2; i < process.argv.length; i += 2) {
+   *     options.push({
+   *        hostname: process.argv[i],
+   *        port: process.argv[i + 1],
+   *      });
+   *   }`
+   */
+
   addOptions(options) {
-    this.options = this.options.concat(options);
+    if (!Array.isArray(options)) throw 'Error: addOptions expects an input of type "Array"';
+    if (options === null || options === undefined) throw 'Error: Options is a required parameter for addOptions';
+
+    for (let i = 1; i < options.length; i += 1) {
+      this.options.push(options[i]);
+    }
   };
 
-  healthCheck(interval = null) {
-    /*
-  15 minute interval healthcheck sends dummy get request to servers(ports) to check server health
-  alters 'active' boolean value based on result of health check
-    */
-    // loops through servers in options & sends mock get request to each
+  /**
+   * Pings all target servers on an interval (if provided) or when method is called
+   * @param {Number} -- Interval in miliseconds setTimeout (Default: Null)
+   * @param {Boolean} -- True or False if server needs SSL to check HTTPS requests (Default: False)
+   * @public
+   */
+
+  healthCheck(interval = null, ssl = false) {
+    /**
+     * Healthcheck sends dummy requests to servers to check server health
+     * Alters 'active' property boolean value based on result of health check
+     */
     const options = this.options;
-    //console.log(options);
+
+    let protocol;
+    ssl ? protocol = https : protocol = http;
+
+    // Loops through servers in options & sends mock requests to each
     for (let i = 0; i < options.length; i += 1) {
-      http.get(options[i], (res) => {
+      protocol.get(options[i], (res) => {
         if (res.statusCode > 100 && res.statusCode < 400) {
-          console.log('statusCode worked');
+          console.log(res.statusCode);
           if (options[i].active === false) options[i].active = true;
         } else {
           options[i].active = false;
-          console.log('statusCode did not meet criteria, server active set to false');
         }
         res.on('end', () => {
           // response from server received, reset value to true if prev false
           if (options[i].active === false) options[i].active = true;
         });
       }).on('error', (e) => {
-        console.log('Got Error: '.concat(e.message));
+        e.name = "HealthCheck Error";
+        errorLog.write(e);
         // if error occurs, set boolean of 'active' to false to ensure no further requests to server
-        if (e) {
-          options[i].active = false;
-        }
+        if (e) options[i].active = false;
       });
     }
+    //if interval param is provided, repeats checks on provided interval
     if (interval !== null) {
       setTimeout(() => {
-        this.healthCheck(interval);
+        this.healthCheck(interval, ssl);
       }, interval);
     }
-  };
+  }
+
+  /**
+   * Clears reverse-proxy internal cache
+   * @param {Number} -- Interval in miliseconds for setTimeout (Default: Null)
+   * @public
+   */
 
   clearCache(interval = null) {
     this.cache = {};
@@ -72,104 +140,181 @@ class LoadBalancer extends EventEmitter {
         this.clearCache(this.cache, interval);
       }, interval);
     }
-  };
+  }
+
+  /** 
+   * Checks if request is considered 'static' - HTML, CSS, JS file
+   * Method is not available to users
+   * @param {Object} -- Browser request object
+   * @return {Boolean} -- True/False if 'static'
+   * @private
+   */
 
   isStatic(bReq) {
-    // if file is html/css/javascript
-    if (bReq.url.slice(bReq.url.length - 5) === '.html' || bReq.url.slice(bReq.url.length - 4) === '.css' || bReq.url.slice(bReq.url.length - 3) === '.js') {
-      // flag variable set to true to enable caching before sending response to browser
-      return true;
-    }
-    return false;
+    // Returns true if matching any of 3 file types, otherwise returns false
+    return bReq.url.slice(bReq.url.length - 5) === '.html' || bReq.url.slice(bReq.url.length - 4) === '.css' || bReq.url.slice(bReq.url.length - 3) === '.js';
   };
+
+  /**
+   * Checks return result from isStatic method & if route exists in routes object
+   * Returns boolean based off result of either returning true
+   * Method is not available to users
+   * @param {Object} -- Browser request object
+   * @param {Object} -- Routes object
+   * @return {Boolean} -- True/false if 'static' or exists in routes object
+   * @private
+   */
 
   shouldCache(bReq, routes) {
-    // user input 'all' to allow cacheEverything method to always work
-    // if (bReq === 'all') return true;
-    // console.log(routes);
-    if (this.isStatic(bReq) || routes[bReq.method + bReq.url] === true) return true;
-    return false;
+    return this.isStatic(bReq) || routes[bReq.method + bReq.url];
   };
+
+  /**
+   * Caches response in reverse-proxy internal cache for future identical requests
+   * Calls shouldCache and awaits boolean return value
+   * Method is not available to users
+   * @param {Object} -- Response body
+   * @param {Object} -- Internal Cache
+   * @param {Object} -- Browser request object
+   * @param {Object} -- Routes object
+   * @private
+   */
 
   cacheContent(body, cache, bReq, routes) {
-    // console.log(loadBalancer.shouldCache(bReq, routes));
-    if (this.shouldCache(bReq, routes) === true) {
-      console.log('Successfully cached request result');
-      // cache response
-      cache[bReq.method + bReq.url] = body;
-    }
-  };
+    if (this.shouldCache(bReq, routes)) cache[bReq.method + bReq.url] = body;
+  }
 
-  init(bReq, bRes) {
+  /**
+   * Determines type of request protocol: HTTP or HTTPS
+   * If request is not to be cached, pipe through to target servers, else cache compiled response
+   * @param {Object} -- Options object
+   * @param {Object} -- Response Body
+   * @param {Object} -- Specific server object
+   * @param {Object} -- Internal Cache
+   * @param {Object} -- Routes object
+   * @param {Object} -- Browser request object
+   * @param {Object} -- Browser response object
+   * @param {Boolean} -- SSL boolean value
+   * @public
+   */
+
+  determineProtocol(options, body, target, cache, routes, bReq, bRes, ssl) {
+    let protocol;
+    ssl ? protocol = https : protocol = http;
+    return protocol.request(options, (sRes) => {
+      bRes.writeHead(200, sRes.headers);
+      if (!this.shouldCache(bReq, routes)) {
+        sRes.pipe(bRes);
+        target.openRequests -= 1;
+      } else {
+        sRes.on('data', (data) => {
+          body += data;
+        });
+        sRes.on('end', (err) => {
+          if (err) errorLog.write(err);
+          target.openRequests -= 1;
+          this.cacheContent(body, cache, bReq, routes);
+          bRes.end(body);
+        });
+      }
+    });
+  }
+
+  /**
+   * Initalize Load-balancer / Reverse-proxy
+   * @param {Object} -- Browser request object
+   * @param {Object} -- Browser response object
+   * @param {Boolean} -- SSL boolean (if using SSL) (Default: False)
+   * @param {Number} -- Delay provided for DDOS throttle (Default: 0)
+   * @param {Number} -- Request count for DDOS throttle (Default: 0)
+   * @public
+   */
+
+  init(bReq, bRes, ssl = false, delay = 0, requests = 0) {
+    if (delay > 0 || requests > 0) throttleIP(bReq, bRes, delay, requests);
+    if (!bReq) throw 'Error: The browser request was not provided to init';
+    if (!bRes) throw 'Error: The browser response was not provided to init';
+    if (delay > 0 && requests > 0 && throttleIP(bReq, bRes, delay, requests) !== undefined) {
+      return throttleIP(bReq, bRes, delay, requests)
+    }
+    if ((delay > 0 && requests <= 0) || (delay <= 0 && requests > 0)) {
+      throw 'Error: both delay and requests need to be defined if you want to throtte ip addresses';
+    }
     const options = this.options;
     const cache = this.cache;
     const routes = this.routes;
 
-    // console.log(options[0].port, ' ', options[0].active);
-    // console.log(options[1].port, ' ', options[1].active);
-    // console.log(options[2].port, ' ', options[2].active);
-    // console.log('-----');
-
     if (cache[bReq.method + bReq.url]) {
-      // STATS GATHERING
-      // statsController.countRequests('lb');
+      // check cache if response exists, else pass it on to target servers
       this.emit('cacheRes');
-
-      console.log('Request response exists, pulling from cache');
       bRes.end(cache[bReq.method + bReq.url]);
     } else {
-      // STATS GATHERING
-      // statsController.countRequests(options[0].hostname.concat(':').concat(options[0].port));
       this.emit('targetRes');
       let body = '';
-      // check for valid request & edge case removes request to '/favicon.ico'
+      // checks for valid request & edge case removes request to '/favicon.ico'
       if (bReq.url !== null && bReq.url !== '/favicon.ico') {
-        // console.log('before options used: ', options);
+        let INDEXTEST = 0;
+        let target = null;
         options.push(options.shift());
-        while (!options[0].active) options.push(options.shift());
-        options[0].method = bReq.method;
-        options[0].path = bReq.url;
-        options[0].headers = bReq.headers;
-        // Call origin server!!!!!!
-        const originServer = http.request(options[0], (sRes) => {
-          console.log('connected');
-          sRes.on('data', (data) => {
-            body += data;
-            // bRes.write(data);
-          });
-          sRes.on('end', () => {
-            this.cacheContent(body, cache, bReq, routes);
-            // console.log(cache);
-
-            if (sRes.headers['set-cookie']) {
-              //console.log(sRes.headers['set-cookie'][0]);
-              //bRes.writeHead(sRes.headers);
-              bRes.writeHead(200, {
-                'Set-Cookie': sRes.headers['set-cookie'][0],
-              });
+        if (this.algo === 'rr') {
+          while (!options[0].active) options.push(options.shift());
+          target = options[0];
+        } else if (this.algo === 'lc') {
+          while (!options[0].active) options.push(options.shift());
+          const min = {};
+          min.reqs = options[0].openRequests;
+          min.option = 0;
+          for (let i = 1; i < options.length; i += 1) {
+            if (options[i].openRequests < min.reqs && options[i].active) {
+              min.reqs = options[i].openRequests;
+              min.option = i;
+              INDEXTEST = i;
             }
-            bRes.end(body);
-          });
+          }
+          target = options[min.option];
+        }
+
+        const serverOptions = {};
+        serverOptions.method = bReq.method;
+        serverOptions.path = bReq.url;
+        serverOptions.headers = bReq.headers;
+        serverOptions.hostname = target.hostname;
+        serverOptions.port = target.port;
+
+        target.openRequests += 1;
+
+        const originServer = this.determineProtocol(serverOptions, body, target, cache, routes, bReq, bRes, ssl);
+
+        originServer.on('error', e => {
+          e.name = 'Target Server Error';
+          errorLog.write(e);
         });
-        originServer.on('error', e => console.log(e));
         bReq.pipe(originServer);
-        // originServer.end();
       }
     }
-  };
+  }
+
+  /**
+   * Injects target server collection (options) into library
+   * @param {Object} -- Options object
+   * @param {Function} -- Callback exists if you want to take an action before server start/after injection
+   * @return {Object} -- Returns loadBalancer object
+   * @private
+   */
 
   lbInit(options, cb) {
-    // console.log('init: ', options);
+    if (options === null || options === undefined) throw 'Error: Options is a required parameter for this method';
     this.options = options;
-    // initialize options for STATS gathering
-    // statsController.createSession(options);
-    cb();
+    this.options.forEach((option) => {
+      option.openSockets = 0;
+      option.openRequests = 0;
+      option.active = true;
+    });
+    if (cb) cb();
     return this;
-  };
+  }
 }
 
 const loadBalancer = new LoadBalancer();
 
 module.exports = loadBalancer.lbInit;
-
-
